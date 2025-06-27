@@ -6,8 +6,9 @@ import java.util.*;
 import java.util.Stack;
    
 parser code {:
-      
     
+    public String SCOPE;
+
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
    
@@ -36,17 +37,26 @@ parser code {:
        private String tipo;
        private boolean EhVetor;
        private String tam;
+       public String scope;
       
-     
-      TabelaSimbolo(String tipo,boolean EhVetor){
-          this.tipo = tipo;  
-          this.EhVetor = EhVetor;
-      }
+     TabelaSimbolo(String tipo, boolean EhVetor){
+        this.tipo = tipo;
+        this.EhVetor = EhVetor;
+        this.scope = SCOPE;
+     }
 
-      TabelaSimbolo(String tipo,boolean EhVetor,String tam){
+      TabelaSimbolo(String tipo,boolean EhVetor, String tam){
           this.tipo = tipo;  
           this.EhVetor = EhVetor;
           this.tam = tam;
+          this.scope = SCOPE;
+      }
+
+      TabelaSimbolo(String tipo,boolean EhVetor,String tam,String scope){
+          this.tipo = tipo;  
+          this.EhVetor = EhVetor;
+          this.tam = tam;
+          this.scope = scope;
       }
 
        public String getTipo(){
@@ -58,6 +68,9 @@ parser code {:
        }
        public String getTam(){
           return this.tam;
+       }
+       public String getScope(){
+        return this.scope;
        }
   }
 
@@ -105,6 +118,8 @@ parser code {:
        format_code(pos); 
 
        if(dicionario.containsKey(id)){
+        String valor = dicionario.get(id).getScope();
+        if(valor.equals(SCOPE))
         report_fatal_error("Variável duplicada [" + id + "]",null);
        }
         else {  
@@ -113,9 +128,15 @@ parser code {:
         } else {
             System.out.print("float " + id + "=" + value);
         }
-
-        dicionario.put(id, new TabelaSimbolo(tipo,false));                                  
+        dicionario.put(id, new TabelaSimbolo(tipo,false,"0",SCOPE));                               
        }
+    }
+
+
+    public void emit_parameter_declaration(String id){
+      checarVariavelNaoDeclarada(id);
+      System.out.print(id.trim()); 
+      
     }
         
     public void emit_atribuicao_vetor(String id,String tam,String expressao){
@@ -129,7 +150,7 @@ parser code {:
       format_code(pos); 
 
       if(dicionario.containsKey(id)){
-        report_fatal_error("Variável duplicada [" + id + "]",null);
+        report_fatal_error("Variável duplicada [" + id + "] na funcao " +SCOPE, null);
       } else {  
         if(tipo.equals("INT")) {
             System.out.print("int " + id);
@@ -158,10 +179,7 @@ parser code {:
     public void emit_atribuicao(String id, String value){
 
         format_code(pos); 
-
-        if(! dicionario.containsKey(id)){
-            report_fatal_error("Variável não declarada [" + id + "]",null);
-        }
+        checarVariavelNaoDeclarada(id);
         System.out.print(id + "=" + value); 
     }
 
@@ -169,12 +187,9 @@ parser code {:
     public void emit_escreva(String id){
 
         format_code(pos);  
+        checarVariavelNaoDeclarada(id);
 
         TabelaSimbolo t1 = dicionario.get(id);  
-        if(t1 == null) {
-          report_fatal_error("Variável não declarada [" + id + "]",null);
-        }  
-
         String tipo = t1.getTipo();
 
         if(tipo.equals("INT")) {
@@ -215,12 +230,8 @@ parser code {:
     public void emit_leia(String id){
 
        format_code(pos);   
-
-      TabelaSimbolo t1 = dicionario.get(id);  
-      if(t1 == null) {
-         report_fatal_error("Variável não declarada [" + id + "]",null);
-      }    
-
+       checarVariavelNaoDeclarada(id);
+       TabelaSimbolo t1 = dicionario.get(id);  
         String tipo = t1.getTipo();
 
          if(tipo.equals("INT")) {
@@ -246,12 +257,8 @@ parser code {:
     public void emit_for(String id, String n1, String n2, String n3){
 
       format_code(pos); 
-      TabelaSimbolo t1 = dicionario.get(id);  
-      if(t1 == null) {
-         report_fatal_error("Variável não declarada [" + id + "]",null);
-      }    
+      checarVariavelNaoDeclarada(id);
       int passo = Integer.parseInt(n3);
-
       if(passo >= 0){
         System.out.print("for("+ id +" = "+ n1 +";"+ id +" < "+ n2 +";"+ id+ " += "+ n3 +")");
       }else{
@@ -272,6 +279,8 @@ parser code {:
     public void checarVariavelNaoDeclarada(String id){
       if(id.contains("[")){id = id.substring(0,id.indexOf('['));}
           if(!dicionario.containsKey(id)){
+            String value = dicionario.get(id).getScope();
+            if(value.equals(SCOPE))
             report_fatal_error("Variavel nao declarada ["+ id+"]",null);
           }
     }
@@ -353,15 +362,15 @@ parser code {:
    
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
 /* Terminals (tokens returned by the scanner). */
-terminal            PLUS, MINUS, TIMES, DIVIDE,  LPAREN, RPAREN, LBRCKT, RBRCKT, EQUALS, GREATER,LESS, PROGRAM, STARTPRG, ENDPRG, READLINE, WRITELINE, ESCREVAL,DECLINT,DECLFLOAT, E, OU, NAO;
-terminal            IFF, SEMI, THENN,  ELSEE, ENDELSE, ATTRIB, PARA, DE, ATE, PASSO, FACA, FIMPARA, ENQUANTO, FIMENQUANTO;
+terminal            PLUS, MINUS, TIMES, DIVIDE,  LPAREN, RPAREN, LBRCKT, RBRCKT, EQUALS, GREATER,LESS, PROGRAM, STARTPRG, ENDPRG, READLINE, WRITELINE, ESCREVAL,DECLINT,DECLFLOAT,DECLARE_VOID, E, OU, NAO;
+terminal            IFF, SEMI, THENN,  ELSEE, ENDELSE, ATTRIB, PARA, DE, ATE, PASSO, FACA, FIMPARA, ENQUANTO, FIMENQUANTO,PROCEDIMENTO,RETORNA,COMMA,VOID;
 terminal String	    ID;
 terminal String     INTT;      
 terminal String     FLOATT;
 terminal String     TEXTO;
 
 /* Non terminals */
-non terminal             program, list_command, command, assign , declare_variable, writel, escreval, readl,if,elsepart,for,while;
+non terminal             program, list_command, function_list, command, assign , declare_variable, writel, escreval, readl,if,elsepart,for,while,return_function,return_function_type,type,return_type,function,parameter_list,parameter,call_parameter_list,call_parameter,function_call;
 non terminal  String    expr,tipo,vetor;      
 
 /* Precedences */
@@ -376,7 +385,8 @@ precedence left E, OU, NAO;
 
 
 /* The grammar rules */
-program ::= PROGRAM        {: emit_program(); :} 
+program ::= function_list
+            PROGRAM        {: SCOPE="MAIN"; emit_program(); :} 
             STARTPRG       {: emit_startblock();            :} 
             list_command   
             ENDPRG         {: emit_endblock() ;            :}
@@ -393,7 +403,9 @@ command ::=    declare_variable
             |  escreval
             |  if
             |  for
-            |  while     
+            |  while   
+            | return_function
+            | function_call
             ;
           
 
@@ -473,8 +485,74 @@ vetor       ::= ID: i LBRCKT INTT:z RBRCKT {:RESULT = i + "["+z+"]"; pilhaAuxili
                 | ID:i LBRCKT expr:z RBRCKT {:RESULT = i + "["+z+"]"; pilhaAuxiliar.push(z); pilhaAuxiliar.push(i);:}
             ;
 
-                                                                                         
-                                                      
+return_function ::= RETORNA {: format_code(pos); System.out.print("return "); :}
+                    return_function_type
+                    SEMI    {: emit_semi(); :}
+                    ;
+
+return_function_type ::= expr:e {: System.out.print(e); :}
+                      | 
+                      VOID
+                      |
+                      ID:id
+                      LPAREN {: System.out.print(i + "("); :}
+                      call_parameter_list
+                      RPAREN {: System.out.print(")"); :}
+                      ;
+
+type      ::= DECLINT:t {:RESULT = "INT"; :}
+              | DECLFLOAT:t {:RESULT = "FLOAT"; :}
+              ;
+
+return_type ::= DECLINT {: RESULT = "INT"; System.out.print("int "); :}
+                | DECLFLOAT {: RESULT = "FLOAT"; System.out.print("float "); :}
+                | DECLARE_VOID {: RESULT = "VOID"; System.out.print("void "); :}
+                ;
+
+function_list ::= function_list function
+              | /*empty*/
+              ;
+
+function ::= PROCEDIMENTO 
+             return_type
+             ID:name  {: SCOPE=name; System.out.print(name); :}
+             LPAREN   {: System.out.print("("); :}
+             parameter_list
+             RPAREN   {: System.out.print("("); :}
+             STARTPRG {:emit_startblock(); :}
+             list_command
+             ENDPRG   {: emit_endblock(); :}
+             ;
+
+parameter_list ::= parameter_list parameter
+                | /* empty*/
+                ;
+
+parameter ::= type:t
+              ID:id {: emit_declaracao_variavel(id,t); :}
+              COMMA {: System.out.print(", "); :}
+              |
+              type:t
+              ID:id {: emit_declaracao_variavel(id,t); :}
+              ;
+
+call_parameter_list ::= call_parameter_list call_parameter
+                      | /* empty */
+                      ;
+
+call_parameter ::= expr:c {: emit_parameter_declaration(c); :}
+                   COMMA {: System.out.print(","); :}
+                   |
+                   expr:c {: emit_parameter_declaration(c); :}
+                   | VOID
+                   ;
+
+function_call ::= ID:i 
+                  LPAREN {: format_code(pos); System.out.print(i + "("); :}
+                  call_parameter_list
+                  RPAREN {: System.out.print(")"); :}
+                  SEMI   {: emit_semi(); :}
+                  ;
 
 expr     ::= expr:e1 PLUS expr:e2         {: RESULT =  e1 + "+" + e2;  dicionario.put(RESULT,new TabelaSimbolo(checkExpr(e1,e2),false));  :}
 	       | expr:e1 MINUS expr:e2        {: RESULT =  e1 + "-" + e2;  dicionario.put(RESULT,new TabelaSimbolo(checkExpr(e1,e2),false)); :}

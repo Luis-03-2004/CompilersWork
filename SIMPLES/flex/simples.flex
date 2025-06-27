@@ -43,7 +43,6 @@ comment =  {commentinicio}{commentbody}{commentfim} | \/\/[a-zA-Z0-9 \t]*
    
 <YYINITIAL> {
 
-   
     ";"                {  return symbol(sym.SEMI);     }
     "+"                {  return symbol(sym.PLUS);     }
     "-"                {  return symbol(sym.MINUS);    }
@@ -69,7 +68,7 @@ comment =  {commentinicio}{commentbody}{commentfim} | \/\/[a-zA-Z0-9 \t]*
     "entao"            {  return symbol(sym.THENN);    }
     "senao"            {  return symbol(sym.ELSEE);    }
     "fimse"            {  return symbol(sym.ENDELSE);  }
-    "nao"              {  return symbol(sym.NAO);       }
+    "nao"              {  return symbol(sym.NAO);      }
     "para"             {  return symbol(sym.PARA);     }
     "de"               {  return symbol(sym.DE);       }
     "ate"              {  return symbol(sym.ATE);      }
@@ -80,6 +79,10 @@ comment =  {commentinicio}{commentbody}{commentfim} | \/\/[a-zA-Z0-9 \t]*
     "fimenquanto"      {  return symbol(sym.FIMENQUANTO);}
     "e"                {  return symbol(sym.E);        }
     "ou"               {  return symbol(sym.OU);       }
+    "procedimento"     {  return symbol(sym.PROCEDIMENTO); }
+    "retorna"          {  return symbol(sym.RETORNA);  }
+    ","                {  return symbol(sym.COMMA);    }
+    "vazio"            {  return symbol(sym.VOID);     }
  
     {integer}      { return symbol(sym.INTT,yytext()); }
     {float}    { return symbol(sym.FLOATT, yytext()); }
