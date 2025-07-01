@@ -5,11 +5,8 @@ inicio
    se n < 0 entao
       retorna 0;
    fimse
-
-      retorna fatorial(n);
       r <- fatorial(n-1);
       retorna n * r;
-   fimse
 fim
 
 procedimento inteiro soma(inteiro n)
