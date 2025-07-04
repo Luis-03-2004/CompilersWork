@@ -440,52 +440,24 @@ declare_variable ::=  tipo:t  ID:id
                      SEMI {: emit_semi(); :}
                      ;
 
-
-// assign		::=   ID:id 
-//                   ATTRIB 
-//                   expr:value        {: emit_atribuicao(id,value); :} 
-//                   SEMI              {: emit_semi(); :}   
-//                   | vetor           {:v1 = pilhaAuxiliar.pop() ; v2 = pilhaAuxiliar.pop(); pilhaAuxiliar.clear();:}               
-//                   ATTRIB
-//                   expr:e            {:emit_atribuicao_vetor(v1,v2,e); pilhaAuxiliar.clear(); :}     
-//                   |SEMI                {:emit_semi(); :}      
-//                  ;   
 assign        ::= ID:id 
                   ATTRIB           {: format_code(pos); System.out.print(id + "="); :}
                   assignment_types
                   SEMI             {: emit_semi(); :}
                   |
                   vetor            {: v1 = pilhaAuxiliar.pop(); v2 = pilhaAuxiliar.pop(); pilhaAuxiliar.clear(); :}
-                  ATTRIB           {: format_code(pos); System.out.print(v1 + "[" + v2 + "]="); :}
+                  ATTRIB
                   array_assignment_types
-                  SEMI             function_call {: emit_semi(); :}
+                  SEMI             {: emit_semi(); :}
                   ;
-
-
-/* Assignments */
-// assignment ::= ID:id 
-//                ASSIGN            {: indent_code(pos); System.out.print(id + "="); :}
-//                assignment_types         
-//                SEMI              {: emit_semicolon(); :} 
-//                | 
-//                array             {: v1 = auxiliaryStack.pop(); v2 = auxiliaryStack.pop(); auxiliaryStack.clear(); :}
-//                ASSIGN            {: indent_code(pos); System.out.print(v1 + "[" + v2 + "]=" ); :}  
-//                array_assignment_types
-//                SEMI           function_call   {: emit_semicolon(); :} 
-//                ;     
+ 
 
 assignment_types ::= expr:value        {: System.out.print(value); :}
-                   | ID:id 
-                     LPAREN {: System.out.print(id + "("); :}
-                     call_parameter_list
-                     RPAREN {: System.out.print(")"); :}   
+                   | function_call  
                    ;
 
 array_assignment_types ::= expr:e  {: emit_atribuicao_vetor(v1,v2, e); pilhaAuxiliar.clear(); :} 
-                         | ID:id 
-                           LPAREN {: System.out.print(id + "("); :}
-                           call_parameter_list
-                           RPAREN {: System.out.print(")"); :}   
+                         |  function_call
                          ;                               
 
 escreval    ::= ESCREVAL
@@ -599,7 +571,6 @@ function_call ::= ID:i
                   LPAREN {: format_code(pos); System.out.print(i + "("); :}
                   call_parameter_list
                   RPAREN {: System.out.print(")"); :}
-                  SEMI   {: emit_semi(); :}
                   ;
 
 expr     ::= expr:e1 PLUS expr:e2         {: RESULT =  e1 + "+" + e2;  dicionario.put(RESULT,new TabelaSimbolo(checkExpr(e1,e2),false));  :}
